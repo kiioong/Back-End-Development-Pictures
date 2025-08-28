@@ -35,7 +35,7 @@ def count():
 ######################################################################
 @app.route("/picture", methods=["GET"])
 def get_pictures():
-    pass
+    return jsonify(data)
 
 ######################################################################
 # GET A PICTURE
@@ -44,7 +44,11 @@ def get_pictures():
 
 @app.route("/picture/<int:id>", methods=["GET"])
 def get_picture_by_id(id):
-    pass
+    picture = get_picture_from_list(id, data)
+    if picture:
+        return picture
+    
+    return {"message": "picture not found"}, 404
 
 
 ######################################################################
@@ -52,7 +56,14 @@ def get_picture_by_id(id):
 ######################################################################
 @app.route("/picture", methods=["POST"])
 def create_picture():
-    pass
+    picture = request.json
+
+    picture_in_list = get_picture_from_list(picture.get('id'), data)
+    if picture_in_list:
+        return {"Message": f"picture with id {picture['id']} already present"},302
+
+    data.append(picture)
+    return picture, 201
 
 ######################################################################
 # UPDATE A PICTURE
@@ -61,11 +72,31 @@ def create_picture():
 
 @app.route("/picture/<int:id>", methods=["PUT"])
 def update_picture(id):
-    pass
+    picture = request.json
+
+    picture_in_list = get_picture_from_list(picture.get('id'), data)
+    if picture_in_list == None:
+        return {"message": "picture not found"}, 404
+
+    data.remove(picture_in_list)
+    data.append(picture)
+    return picture, 201
 
 ######################################################################
 # DELETE A PICTURE
 ######################################################################
 @app.route("/picture/<int:id>", methods=["DELETE"])
 def delete_picture(id):
-    pass
+    picture_in_list = get_picture_from_list(id, data)
+    if picture_in_list == None:
+        return {"message": "picture not found"}, 404
+
+    data.remove(picture_in_list)
+    return "", 204
+
+def get_picture_from_list(id, list_data):
+    for picture in list_data:
+        if picture['id'] == id:
+            return picture
+
+    return None
